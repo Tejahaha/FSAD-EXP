@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+html {
+    font-family: "Poppins", sans-serif;
+}
+
+.container {
+    border: 3px solid rgb(17, 200, 17);
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+}
+
+.header {
+    display: flex;
+    padding: 15px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.heading {
+    flex: 1;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.menu {
+    flex: 4;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.menu span {
+    margin-left: 25px;
+    cursor: pointer;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.menu span:hover {
+    background-color: #e9ecef;
+    color: #1a73e8;
+}
+
+.card1, .card2 {
+    border: 2px solid blue;
+    padding: 20px;
+    margin: 15px 0;
+    background-color: white;
+    border-radius: 10px;
+    display: flex;
+    transition: transform 0.2s ease;
+}
+
+.card1:hover, .card2:hover {
+    transform: translateY(-5px);
+}
+
+.plogo {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plogo img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+
+.pdetails {
+    margin-left: 20px;
+    flex: 1;
+}
+
+.pname {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.pother p {
+    color: #6c757d;
+    margin: 8px 0;
+    font-size: 15px;
+}
+
+.footer {
+    border: 2px solid blue;
+    padding: 15px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    background-color: white;
+    border-radius: 8px;
+}
+
+.icon {
+    width: 40px;
+    height: 40px;
+    transition: transform 0.3s ease;
+}
+
+.icon:hover {
+    transform: scale(1.1);
+}
+
+.icon img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+@media(max-width: 800px) {
+    .menu {
+        display: none;
+    }
+    
+    .card1, .card2 {
+        flex-direction: column;
+    }
+    
+    .plogo {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .pdetails {
+        margin-left: 0;
+    }
+    
+    .pother {
+        display: none;
+    }
+    
+    .footer {
+        flex-wrap: wrap;
+    }
+}
