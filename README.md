@@ -1,4 +1,4 @@
-# LABEX - React Exercise Project
+# LAB EXPERIMENTS - React Exercise Project / BACKEND IN MASTER BRANCH
 
 A comprehensive React project showcasing various exercises and components built with Vite. This project demonstrates different React concepts through practical examples.
 
@@ -20,7 +20,7 @@ A comprehensive React project showcasing various exercises and components built 
 
 1. Clone the repository:
    ```bash
-   git clone <your-repository-url>
+   git clone www.github.com/Tejahaha/FSAD-EXP
    cd LABEX
    ```
 
