@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f7f7f7;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        form {
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        input, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #357ae8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f2f2f2;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit-btn {
+            background: #f0ad4e;
+        }
+
+        .delete-btn {
+            background: #d9534f;
+        }
+
+        .cancel-btn {
+            background: #777;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .success {
+            color: green;
+            margin-bottom: 10px;
+        }
+
+        #customerForm {
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Customer Management</h1>
+
+    <div id="message" class="hidden"></div>
+
+    <form id="customerForm">
+        <input type="hidden" id="customerId" name="id">
+        <input type="text" id="name" name="name" placeholder="Name" required>
+        <input type="number" id="age" name="age" placeholder="Age" required min="1" max="120">
+        <input type="email" id="email" name="email" placeholder="Email" required>
+        <button type="submit" id="submitBtn">Add Customer</button>
+        <button type="button" id="cancelBtn" class="cancel-btn hidden">Cancel</button>
+    </form>
+
+    <table id="customerTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="customerList">
+        <!-- Customer data will be inserted here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // DOM elements
+    const customerForm = document.getElementById('customerForm');
+    const customerList = document.getElementById('customerList');
+    const nameInput = document.getElementById('name');
+    const ageInput = document.getElementById('age');
+    const emailInput = document.getElementById('email');
+    const customerIdInput = document.getElementById('customerId');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const messageDiv = document.getElementById('message');
+
+    // Base API URL
+    const BASE_URL = 'http://localhost:8080';
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', fetchCustomers);
+
+    // Event listeners
+    customerForm.addEventListener('submit', function(event) {
+        // Prevent the default form submission
+        event.preventDefault();
+
+        // Get form data
+        const formData = new FormData(customerForm);
+        const urlEncodedData = new URLSearchParams(formData).toString();
+
+        // Check if we're adding or updating
+        const isEditing = customerIdInput.value !== '';
+
+        if (isEditing) {
+            // Update customer
+            fetch(`${BASE_URL}/api/updatecustomer/${customerIdInput.value}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: urlEncodedData
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Update failed');
+                    showMessage('Customer updated successfully', 'success');
+                    resetForm();
+                    fetchCustomers();
+                })
+                .catch(error => {
+                    showMessage(error.message, 'error');
+                });
+        } else {
+            // Add new customer
+            fetch(`${BASE_URL}/api/addcustomer`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: urlEncodedData
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to add customer');
+                    showMessage('Customer added successfully', 'success');
+                    resetForm();
+                    fetchCustomers();
+                })
+                .catch(error => {
+                    showMessage('Error adding customer: ' + error.message, 'error');
+                });
+        }
+    });
+
+    cancelBtn.addEventListener('click', resetForm);
+
+    // Fetch all customers
+    async function fetchCustomers() {
+        try {
+            const response = await fetch(`${BASE_URL}/api/viewcustomer`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch customers');
+            }
+            const customers = await response.json();
+            renderCustomers(customers);
+        } catch (error) {
+            showMessage('Error fetching customers: ' + error.message, 'error');
+            console.error('Error fetching customers:', error);
+        }
+    }
+
+    // Render customers table
+    function renderCustomers(customers) {
+        customerList.innerHTML = '';
+
+        if (!customers || customers.length === 0) {
+            customerList.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center;">No customers found</td>
+                    </tr>
+                `;
+            return;
+        }
+
+        customers.forEach(customer => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td>${customer.id}</td>
+                    <td>${customer.name}</td>
+                    <td>${customer.age}</td>
+                    <td>${customer.email}</td>
+                    <td class="action-buttons">
+                        <button class="edit-btn" onclick="editCustomer(${customer.id})">Edit</button>
+                        <button class="delete-btn" onclick="confirmDelete(${customer.id})">Delete</button>
+                    </td>
+                `;
+            customerList.appendChild(row);
+        });
+    }
+
+    // Edit a customer (populate form)
+    async function editCustomer(id) {
+        try {
+            const response = await fetch(`${BASE_URL}/api/viewcustomer/${id}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch customer');
+            }
+            const customer = await response.json();
+
+            // Populate form
+            customerIdInput.value = customer.id;
+            nameInput.value = customer.name;
+            ageInput.value = customer.age;
+            emailInput.value = customer.email;
+
+            // Change button text
+            submitBtn.textContent = 'Update Customer';
+            cancelBtn.classList.remove('hidden');
+
+            // Scroll to form
+            customerForm.scrollIntoView({ behavior: 'smooth' });
+
+            showMessage('Editing customer #' + id, 'success');
+        } catch (error) {
+            showMessage(error.message, 'error');
+            console.error('Edit error:', error);
+        }
+    }
+
+    // Confirm delete customer
+    function confirmDelete(id) {
+        if (confirm(`Are you sure you want to delete customer #${id}?`)) {
+            // Delete customer
+            fetch(`${BASE_URL}/api/deletecustomer/${id}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Delete failed');
+                    showMessage('Customer deleted successfully', 'success');
+                    fetchCustomers();
+                })
+                .catch(error => {
+                    showMessage(error.message, 'error');
+                });
+        }
+    }
+
+    // Reset form to add mode
+    function resetForm() {
+        customerForm.reset();
+        customerIdInput.value = '';
+        submitBtn.textContent = 'Add Customer';
+        cancelBtn.classList.add('hidden');
+    }
+
+    // Show message to user
+    function showMessage(text, type) {
+        messageDiv.textContent = text;
+        messageDiv.className = type;
+        messageDiv.classList.remove('hidden');
+
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            messageDiv.classList.add('hidden');
+        }, 3000);
+    }
+
+    // Make functions available globally for onclick events
+    window.editCustomer = editCustomer;
+    window.confirmDelete = confirmDelete;
+</script>
+</body>
+</html>
